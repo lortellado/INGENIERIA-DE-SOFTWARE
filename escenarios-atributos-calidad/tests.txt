@@ -1,0 +1,3 @@
+> "Un sistema de cajero automático debe ser fácil de usar por una persona mayor."
+> "Un servidor en una granja de servidores falla durante la operación normal, y el sistema informa al operador y continúa operando sin downtime."
+> "Necesito armar un árbol de utilidad para un sistema de e-commerce."
