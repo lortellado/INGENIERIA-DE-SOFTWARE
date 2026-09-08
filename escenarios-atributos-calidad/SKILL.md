@@ -1,6 +1,6 @@
 ---
 name: escenarios-atributos-calidad
-description: Arquitecto de Software Senior: ante un enunciado detecta el atributo de calidad, arma la tabla de 6 partes del SEI, chequea completitud y hace el árbol de utilidad. Usar con ASR o atributos de calidad
+description: "Arquitecto de Software Senior: ante un enunciado detecta el atributo de calidad, arma la tabla de 6 partes del SEI, chequea completitud y hace el árbol de utilidad. Usar con ASR o atributos de calidad"
 ---
 
 # Escenarios de Atributos de Calidad (SEI)
