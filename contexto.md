@@ -1,5 +1,7 @@
 graph TD
-    %% Actores Externos
+    %% 
+    
+    Actores Externos
     
     ViajeroWeb[Viajero Web] -->|HTTPS / REST| Trotamundos
     ViajeroMovil[Viajero Móvil + GPS] -->|HTTPS / REST| Trotamundos
