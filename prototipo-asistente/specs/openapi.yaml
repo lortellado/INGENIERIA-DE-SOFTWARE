@@ -1,0 +1,148 @@
+openapi: 3.0.3
+info:
+  title: Trotamundos - Assistant Service (Conversation API)
+  version: 0.1.0
+  description: >
+    Contrato del asistente virtual (Iteracion 5, ADR-031 a ADR-036). Spec-first (ADR-026).
+    La identidad sale SIEMPRE del token (ADR-032): ningun cuerpo ni parametro lleva el usuario.
+servers:
+  - url: http://127.0.0.1:8080
+security:
+  - bearerAuth: []
+paths:
+  /v1/asistente/mensajes:
+    post:
+      summary: Enviar un mensaje al asistente (UC10, UC11, UC12, UC13)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MensajeEntrada'
+      responses:
+        '200':
+          description: Respuesta del asistente; puede traer una accion pendiente de confirmacion o una derivacion.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaAsistente'
+        '400':
+          description: Mensaje vacio, demasiado largo o cuerpo invalido.
+        '401':
+          description: Token ausente, invalido o vencido.
+        '403':
+          description: El token no habilita el uso del asistente.
+        '429':
+          description: Demasiados mensajes del mismo usuario (ADR-036). Incluye retryAfter.
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+        '503':
+          description: Asistente no disponible (modelo caido, circuito abierto o saturacion). Incluye alternativas (ADR-034).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoDisponible'
+  /v1/asistente/acciones/{accionId}/confirmar:
+    post:
+      summary: Confirmar una accion pendiente (UC11). La llama la persona, nunca el modelo.
+      parameters:
+        - $ref: '#/components/parameters/accionId'
+      responses:
+        '200':
+          description: Cambio aplicado.
+        '401':
+          description: Token ausente, invalido o vencido.
+        '403':
+          description: La accion pertenece a otro usuario. No se ejecuta nada y se audita el intento.
+        '404':
+          description: Accion inexistente.
+        '410':
+          description: Accion vencida, ya usada o cancelada.
+        '422':
+          description: El servicio de reservas rechazo el cambio (datos ya no validos).
+        '502':
+          description: El servicio de reservas no esta disponible.
+  /v1/asistente/acciones/{accionId}/cancelar:
+    post:
+      summary: Cancelar una accion pendiente (UC11)
+      parameters:
+        - $ref: '#/components/parameters/accionId'
+      responses:
+        '204':
+          description: Accion cancelada.
+        '401':
+          description: Token ausente, invalido o vencido.
+        '404':
+          description: No hay una accion pendiente propia con ese identificador.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    accionId:
+      name: accionId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    MensajeEntrada:
+      type: object
+      required: [mensaje]
+      properties:
+        mensaje:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    AccionPendiente:
+      type: object
+      required: [accionId, resumen, vencimiento]
+      properties:
+        accionId:
+          type: string
+        resumen:
+          type: string
+        vencimiento:
+          type: string
+          format: date-time
+    Derivacion:
+      type: object
+      required: [casoId, agencia]
+      properties:
+        casoId:
+          type: string
+        agencia:
+          type: string
+    RespuestaAsistente:
+      type: object
+      required: [respuesta]
+      properties:
+        respuesta:
+          type: string
+        accionPendiente:
+          $ref: '#/components/schemas/AccionPendiente'
+        derivacion:
+          $ref: '#/components/schemas/Derivacion'
+        guia:
+          type: string
+    NoDisponible:
+      type: object
+      required: [error, mensaje, alternativas]
+      properties:
+        error:
+          type: string
+        mensaje:
+          type: string
+        alternativas:
+          type: array
+          items:
+            type: object
+            properties:
+              tipo:
+                type: string
+              texto:
+                type: string

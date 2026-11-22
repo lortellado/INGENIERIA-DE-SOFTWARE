@@ -1,0 +1,36 @@
+asyncapi: 2.6.0
+info:
+  title: Trotamundos - Eventos de auditoria del Assistant Service
+  version: 0.1.0
+  description: >
+    Eventos que el asistente publica hacia el Audit Log existente (ADR-033, ADR-035).
+    Nunca incluyen el texto de la conversacion, solo identificadores.
+channels:
+  auditoria.asistente:
+    publish:
+      message:
+        $ref: '#/components/messages/EventoAuditoria'
+components:
+  messages:
+    EventoAuditoria:
+      payload:
+        type: object
+        required: [evento, usuario, detalle]
+        properties:
+          evento:
+            type: string
+            enum:
+              - ACCION_PROPUESTA
+              - ACCION_CONFIRMADA
+              - ACCION_EJECUTADA
+              - ACCION_FALLIDA
+              - ACCION_CANCELADA
+              - ACCION_VENCIDA
+              - ACCION_RECHAZADA
+              - DERIVACION_SOLICITADA
+              - HERRAMIENTA_RECHAZADA
+              - MODELO_NO_DISPONIBLE
+          usuario:
+            type: string
+          detalle:
+            type: object
